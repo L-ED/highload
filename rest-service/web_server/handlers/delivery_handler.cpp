@@ -48,13 +48,8 @@ using Poco::Util::ServerApplication;
 
 void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]] HTTPServerResponse &response) {
 
-    try
-    {
-        // for (const auto& [key, value] : form) {
-        //     std::cout << "key: " << key << " value: " << value << std::endl;
-        // }
-
-        // Create product from JSON body
+    try {
+        // Create delivery from JSON body
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST && request.getContentType() == "application/json") {
             std::string body(std::istreambuf_iterator<char>(request.stream()), {});
             auto delivery = database::Delivery::fromJSON(body);
@@ -72,17 +67,18 @@ void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]]
             Poco::JSON::Stringifier::stringify(delivery.toJSON(), out);
         }
         else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
+            // Select deliveries using filters from query string
             HTMLForm form(request, request.stream());
 
-
             std::vector<database::Delivery> deliveries;
-            // if (form.has("userId")) {
-            //     long owner_id = atol(form.get("userId").c_str());
-            //     products = database::Delivery::SelectByOwnerId(owner_id);
-            // }
-            // else {
-                deliveries = database::Delivery::SelectAll();
-            // }
+            long sender_id = std::numeric_limits<long>::max();
+            long reciever_id = std::numeric_limits<long>::max();
+            if (form.has("senderId"))
+                sender_id = atol(form.get("senderId").c_str());
+            if (form.has("recieverId"))
+                reciever_id = atol(form.get("recieverId").c_str());
+
+            deliveries = database::Delivery::Select(sender_id, reciever_id);
 
             auto result = Poco::JSON::Array();
             for (auto delivery : deliveries)

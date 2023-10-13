@@ -25,16 +25,23 @@ def insert_product(product):
     res.raise_for_status()
     return json.loads(res.text)
 
-def insert_delivery(sender, reciever, product):
+def insert_delivery(delivery):
     res = requests.post(f'{BASE_API_URL}/api/deliveries', json={
-        'senderId': sender,
-        'recieverId': reciever,
-        'productId': product
+        'senderId': delivery['senderId'],
+        'recieverId': delivery['recieverId'],
+        'productId': delivery['productId']
     })
 
     res.raise_for_status()
-    return json.loads(res.text)
+    return res.json()
 
+def get_deliveries(sender_id=None, reciever_id=None):
+    res = requests.get(f'{BASE_API_URL}/api/deliveries', params={
+        'senderId': sender_id,
+        'recieverId': reciever_id,
+    })
+    res.raise_for_status()
+    return res.json();
 
 # insert_product(1, 'wheel')
 # insert_product(1, 'car')
@@ -49,9 +56,10 @@ with open('test/data.json') as file:
 # for user in users:
 #     insert_user(user)
 
-products = data['Product']
-for product in products:
-    insert_product(product)
+# products = data['Product']
+# for product in products:
+#     insert_product(product)
 
-
-
+deliveries = data['Delivery']
+for delivery in deliveries:
+    insert_delivery(delivery)

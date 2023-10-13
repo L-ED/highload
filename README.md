@@ -17,3 +17,7 @@ Rel(other_service,user_service, "/auth - проверка логина/паро�
 
 @enduml
 ```
+
+
+Clone / remote url using access token
+```https://<username>:<access token>@gitlab.com/<username>/highload.git```

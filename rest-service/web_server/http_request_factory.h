@@ -74,8 +74,8 @@ public:
 
         // Create product => POST /api/products + JSON
         // Get user's products => GET /api/products?&userId=0
-
         // Create delivery => POST /api/delivery/ + JSON
+
         // Get delivery info => GET /api/delivery?senderId=0&recieverId=0
 
         if (StartsWith(request.getURI(), "/api/products")) {

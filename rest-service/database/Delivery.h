@@ -19,7 +19,7 @@ namespace database {
 
             static Delivery fromJSON(const std::string& str);
             static std::vector<Delivery> SelectAll();
-            static std::vector<Delivery> SelectByOwnerId(long owner_id);
+            static std::vector<Delivery> Select(long sender_id = std::numeric_limits<long>::max(), long reciever_id = std::numeric_limits<long>::max());
 
             inline long GetId() const { return id_; }
             long GetSenderId() const { return sender_id_; }

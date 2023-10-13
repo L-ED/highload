@@ -36,8 +36,9 @@
         { "ownerId": 3, "name": "python", "__test_object_id": 5 }
     ],
     "Delivery": [
-        { "senderId__User.id": 1, "recieverId__User.id": 2, "productId__Product.id": 1, "__test_object_id": 1 },
-        { "senderId__User.id": 2, "recieverId__User.id": 1, "productId__Product.id": 3, "__test_object_id": 1 },
-        { "senderId__User.id": 3, "recieverId__User.id": 1, "productId__Product.id": 5, "__test_object_id": 1 }
+        { "senderId": 1, "recieverId": 2, "productId": 1, "__test_object_id": 1 },
+        { "senderId": 1, "recieverId": 2, "productId": 2, "__test_object_id": 1 },
+        { "senderId": 2, "recieverId": 1, "productId": 3, "__test_object_id": 1 },
+        { "senderId": 3, "recieverId": 1, "productId": 5, "__test_object_id": 1 }
     ]
 }

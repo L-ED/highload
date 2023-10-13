@@ -11,6 +11,7 @@
 #include <Poco/Data/RecordSet.h>
 #include <Poco/JSON/Parser.h>
 #include <Poco/Dynamic/Var.h>
+#include <limits>
 
 using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
@@ -111,34 +112,45 @@ namespace database {
         }
     }
 
-    // std::vector<Delivery> Delivery::SelectByOwnerId(long owner_id) {
-    //     try {
-    //         Poco::Data::Session session = database::Database::get().create_session();
-    //         Statement select(session);
-    //         std::vector<Delivery> result;
-    //         Delivery a;
+    std::vector<Delivery> Delivery::Select(long sender_id, long reciever_id) {
+        try {
+            Poco::Data::Session session = database::Database::get().create_session();
+            Statement select(session);
+            std::vector<Delivery> result;
+            Delivery a;
 
-    //         select << "SELECT id, owner_id, name FROM Product where owner_id = ?",
-    //             into(a.id_),
-    //             into(a.owner_id_),
-    //             into(a.name_),
-    //             use(owner_id),
-    //             range(0, 1); //  iterate over result set one row at a time
+            select << "SELECT id, sender_id, reciever_id, product_id FROM Delivery"
+                << into(a.id_), into(a.sender_id_), into(a.reciever_id_), into(a.product_id_);
 
-    //         while (!select.done())
-    //             if (select.execute())
-    //                 result.push_back(a);
-    //         return result;
-    //     }
-    //     catch (Poco::Data::MySQL::ConnectionException &e) {
-    //         std::cout << "connection:" << e.what() << std::endl;
-    //         throw;
-    //     }
-    //     catch (Poco::Data::MySQL::StatementException &e) {
-    //         std::cout << "statement:" << e.what() << std::endl;
-    //         throw;
-    //     }
-    // }
+            if (sender_id != std::numeric_limits<long>::max() || reciever_id != std::numeric_limits<long>::max()) {
+                select << " WHERE ";
+                if (sender_id != std::numeric_limits<long>::max())
+                    select << " sender_id = ?" , use(sender_id);
+                else
+                    select << "1=1";
+
+                if (reciever_id != std::numeric_limits<long>::max())
+                    select << " AND reciever_id = ?" , use(reciever_id);
+                else
+                    select << "1=1";
+            }
+
+            select << "",range(0, 1);
+
+            while (!select.done())
+                if (select.execute())
+                    result.push_back(a);
+            return result;
+        }
+        catch (Poco::Data::MySQL::ConnectionException &e) {
+            std::cout << "connection:" << e.what() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::StatementException &e) {
+            std::cout << "statement:" << e.what() << std::endl;
+            throw;
+        }
+    }
 
     void Delivery::Save() {
         try {
