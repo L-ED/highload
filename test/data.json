@@ -1,0 +1,43 @@
+{
+    "User": [
+        {
+            "firstName": "user-1",
+            "lastName": "lastName-1",
+            "email": "email-1@bk.ru",
+            "title": "title-1",
+            "login": "login-1",
+            "password": "pass-1",
+            "__test_object_id": 1
+        },
+        {
+            "firstName": "user-2",
+            "lastName": "lastName-2",
+            "email": "email-2@bk.ru",
+            "title": "title-2",
+            "login": "login-2",
+            "password": "pass-2",
+            "__test_object_id": 2
+        },
+        {
+            "firstName": "user-3",
+            "lastName": "lastName-3",
+            "email": "email-3@bk.ru",
+            "title": "title-3",
+            "login": "login-3",
+            "password": "pass-3",
+            "__test_object_id": 3
+        }
+    ],
+    "Product": [
+        { "ownerId": 1, "name": "plane", "__test_object_id": 1 },
+        { "ownerId": 1, "name": "plane", "__test_object_id": 2 },
+        { "ownerId": 2, "name": "rocket", "__test_object_id": 3 },
+        { "ownerId": 2, "name": "toy", "__test_object_id": 4 },
+        { "ownerId": 3, "name": "python", "__test_object_id": 5 }
+    ],
+    "Delivery": [
+        { "senderId__User.id": 1, "recieverId__User.id": 2, "productId__Product.id": 1, "__test_object_id": 1 },
+        { "senderId__User.id": 2, "recieverId__User.id": 1, "productId__Product.id": 3, "__test_object_id": 1 },
+        { "senderId__User.id": 3, "recieverId__User.id": 1, "productId__Product.id": 5, "__test_object_id": 1 }
+    ]
+}
