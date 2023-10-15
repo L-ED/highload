@@ -54,7 +54,7 @@ namespace database
         root->set("email", _email);
         root->set("title", _title);
         root->set("login", _login);
-        root->set("password", _password);
+        // root->set("password", _password);
 
         return root;
     }
@@ -77,35 +77,35 @@ namespace database
         return user;
     }
 
-    std::optional<long> User::auth(std::string &login, std::string &password)
-    {
-        try
-        {
+    std::optional<User> User::Auth(std::string& login, std::string& password) {
+        try {
             Poco::Data::Session session = database::Database::get().create_session();
             Poco::Data::Statement select(session);
-            long id;
-            select << "SELECT id FROM User where login=? and password=?",
-                into(id),
+            User a;
+            select << "SELECT id, first_name, last_name, email, title, login FROM User WHERE login = ? and password = ?",
+                into(a._id),
+                into(a._first_name),
+                into(a._last_name),
+                into(a._email),
+                into(a._title),
+                into(a._login),
                 use(login),
                 use(password),
                 range(0, 1); //  iterate over result set one row at a time
 
             select.execute();
             Poco::Data::RecordSet rs(select);
-            if (rs.moveFirst()) return id;
+            if (rs.moveFirst()) return a;
         }
-
-        catch (Poco::Data::MySQL::ConnectionException &e)
-        {
+        catch (Poco::Data::MySQL::ConnectionException& e) {
             std::cout << "connection:" << e.what() << std::endl;
         }
-        catch (Poco::Data::MySQL::StatementException &e)
-        {
-
+        catch (Poco::Data::MySQL::StatementException& e) {
             std::cout << "statement:" << e.what() << std::endl;
         }
         return {};
     }
+
     std::optional<User> User::read_by_id(long id)
     {
         try

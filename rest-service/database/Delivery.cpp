@@ -119,23 +119,27 @@ namespace database {
             std::vector<Delivery> result;
             Delivery a;
 
-            select << "SELECT id, sender_id, reciever_id, product_id FROM Delivery"
-                << into(a.id_), into(a.sender_id_), into(a.reciever_id_), into(a.product_id_);
+            select << "SELECT id, sender_id, reciever_id, product_id FROM `Delivery`",
+                into(a.id_), into(a.sender_id_), into(a.reciever_id_), into(a.product_id_);
 
             if (sender_id != std::numeric_limits<long>::max() || reciever_id != std::numeric_limits<long>::max()) {
                 select << " WHERE ";
                 if (sender_id != std::numeric_limits<long>::max())
-                    select << " sender_id = ?" , use(sender_id);
+                    select << "sender_id = ?" , use(sender_id);
                 else
                     select << "1=1";
 
+                select << " AND ";
+
                 if (reciever_id != std::numeric_limits<long>::max())
-                    select << " AND reciever_id = ?" , use(reciever_id);
+                    select << "reciever_id = ?" , use(reciever_id);
                 else
                     select << "1=1";
             }
 
             select << "",range(0, 1);
+
+            std::cout << "-- " << select.toString() << std::endl;
 
             while (!select.done())
                 if (select.execute())

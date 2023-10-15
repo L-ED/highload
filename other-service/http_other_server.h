@@ -95,21 +95,46 @@ using Poco::Util::ServerApplication;
 #include <fstream>
 
 #include <optional>
-#include "../helper.h"
+#include "../common/utils.h"
 
-class OtherHandler : public HTTPRequestHandler
-{
 
-public:
-    OtherHandler(const std::string &format) : _format(format)
-    {
+std::pair<Poco::Net::HTTPResponse, std::string> MakeJSONRequest(
+    const std::string& url,
+    const std::string& method,
+    const std::string& auth_header,
+    [[maybe_unused]] const std::string& body = {}
+) {
+    Poco::URI uri(url);
+    Poco::Net::HTTPClientSession session(uri.getHost(), uri.getPort());
+    Poco::Net::HTTPRequest request(method, uri.toString());
+
+    request.setVersion(Poco::Net::HTTPMessage::HTTP_1_1);
+    request.setContentType("application/json");
+    request.set("Authorization", auth_header);
+    request.set("Accept", "application/json");
+    request.setKeepAlive(true);
+    session.sendRequest(request);
+
+    Poco::Net::HTTPResponse response;
+    std::istream& rs = session.receiveResponse(response);
+
+    std::string reponse_body;
+    while (rs) {
+        char c{};
+        rs.read(&c, 1);
+        if (rs)
+            reponse_body += c;
     }
 
-    std::optional<std::string> do_get(const std::string &url, const std::string &login, const std::string &password)
-    {
+    return std::make_pair(std::move(response), std::move(reponse_body));
+}
+
+
+class OtherHandler : public HTTPRequestHandler {
+public:
+    std::optional<std::string> GetRequest(const std::string &url, const std::string &login, const std::string &password) {
         std::string string_result;
-        try
-        {
+        try {
             std::string token = login + ":" + password;
             std::ostringstream os;
             Poco::Base64Encoder b64in(os);
@@ -125,7 +150,6 @@ public:
             request.set("Authorization", identity);
             request.set("Accept", "application/json");
             request.setKeepAlive(true);
-
             s.sendRequest(request);
 
             Poco::Net::HTTPResponse response;
@@ -142,8 +166,7 @@ public:
             if (response.getStatus() != 200)
                 return {};
         }
-        catch (Poco::Exception &ex)
-        {
+        catch (Poco::Exception& ex) {
             std::cout << "exception:" << ex.what() << std::endl;
             return std::optional<std::string>();
         }
@@ -151,39 +174,48 @@ public:
         return string_result;
     }
 
-    void handleRequest(HTTPServerRequest &request,
-                       HTTPServerResponse &response)
-    {
-        HTMLForm form(request, request.stream());
-        std::string scheme;
-        std::string info;
+    std::optional<Poco::JSON::Object::Ptr> AuthUser(const HTTPServerRequest& request) {
+        std::string scheme, info;
         std::string login, password;
 
         request.getCredentials(scheme, info);
-        if (scheme == "Basic")
-        {
+        if (scheme == "Basic") {
             get_identity(info, login, password);
             std::cout << "login:" << login << std::endl;
             std::cout << "password:" << password << std::endl;
             std::string host = "localhost";
             std::string url;
 
-            if(std::getenv("SERVICE_HOST")!=nullptr) host = std::getenv("SERVICE_HOST");
-            url = "http://" + host+":8080/auth";
+            if (std::getenv("SERVICE_HOST") != nullptr)
+                host = std::getenv("SERVICE_HOST");
+            url = "http://" + host + ":8080/api/users/self";
 
-            if (do_get(url, login, password)) // do authentificate
-            {
-
-                response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK);
-                response.setChunkedTransferEncoding(true);
-                response.setContentType("application/json");
-                Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
-                root->set("result", "some result");
-                std::ostream &ostr = response.send();
-                Poco::JSON::Stringifier::stringify(root, ostr);
-                return;
+            if (auto user = GetRequest(url, login, password); user.has_value()) {
+                Poco::JSON::Parser parser;
+                Poco::Dynamic::Var result = parser.parse(user.value());
+                return result.extract<Poco::JSON::Object::Ptr>();
             }
-            
+        }
+
+        return std::optional<Poco::JSON::Object::Ptr>();
+    }
+
+    void handleRequest(HTTPServerRequest &request, HTTPServerResponse &response) {
+        HTMLForm form(request, request.stream());
+
+        if (auto user = AuthUser(request); user.has_value()) {
+
+            auto [resp, body] = MakeJSONRequest(
+                "http://localhost:8080/api/products?ownerId=" + std::to_string( user.value()->getValue<long>("id") ),
+                Poco::Net::HTTPRequest::HTTP_GET, {}, {}
+            );
+
+            response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK);
+            response.setChunkedTransferEncoding(true);
+            response.setContentType("application/json");
+            std::ostream& ostr = response.send();
+            ostr << body;
+            return;
         }
 
         response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_UNAUTHORIZED);
@@ -198,38 +230,19 @@ public:
         std::ostream &ostr = response.send();
         Poco::JSON::Stringifier::stringify(root, ostr);
     }
-
-private:
-    std::string _format;
 };
 
-class HTTPOtherRequestFactory : public HTTPRequestHandlerFactory
-{
+class HTTPOtherRequestFactory : public HTTPRequestHandlerFactory {
 public:
-    HTTPOtherRequestFactory(const std::string &format) : _format(format)
-    {
+    HTTPRequestHandler *createRequestHandler([[maybe_unused]] const HTTPServerRequest &request) {
+        return new OtherHandler();
     }
-
-    HTTPRequestHandler *createRequestHandler([[maybe_unused]] const HTTPServerRequest &request)
-    {
-
-        return new OtherHandler(_format);
-    }
-
-private:
-    std::string _format;
 };
 
-class HTTPOtherWebServer : public Poco::Util::ServerApplication
-{
+class HTTPOtherWebServer : public Poco::Util::ServerApplication {
 public:
-    HTTPOtherWebServer() : _helpRequested(false)
-    {
-    }
-
-    ~HTTPOtherWebServer()
-    {
-    }
+    HTTPOtherWebServer() : _helpRequested(false) { }
+    ~HTTPOtherWebServer() = default;
 
 protected:
     void initialize(Application &self)
@@ -248,7 +261,7 @@ protected:
         if (!_helpRequested)
         {
             ServerSocket svs(Poco::Net::SocketAddress("0.0.0.0", 8081));
-            HTTPServer srv(new HTTPOtherRequestFactory(DateTimeFormat::SORTABLE_FORMAT), svs, new HTTPServerParams);
+            HTTPServer srv(new HTTPOtherRequestFactory(), svs, new HTTPServerParams);
             srv.start();
             waitForTerminationRequest();
             srv.stop();

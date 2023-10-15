@@ -29,6 +29,8 @@ SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(rest-service
     rest-service/main.cpp 
     rest-service/config/config.cpp 
+    rest-service/web_server/http_request_factory.cpp
+    rest-service/web_server/handlers/user_handler.cpp
     rest-service/web_server/handlers/product_handler.cpp
     rest-service/web_server/handlers/delivery_handler.cpp
     rest-service/database/database.cpp
@@ -54,19 +56,20 @@ target_link_libraries(rest-service PRIVATE
 
 
 
-# add_executable(${OTHER_SERVICE} other_main.cpp)
-# target_include_directories(${OTHER_SERVICE} PRIVATE "${CMAKE_BINARY_DIR}")
-# target_compile_options(${OTHER_SERVICE} PRIVATE -Wall -Wextra -pedantic -Werror )
-# set_target_properties(${OTHER_SERVICE} PROPERTIES LINKER_LANGUAGE CXX)
-# set_target_properties(${OTHER_SERVICE} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+add_executable(other-service other-service/main.cpp)
+target_include_directories(other-service PRIVATE "${CMAKE_BINARY_DIR}")
+target_compile_options(other-service PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(other-service PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(other-service PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
 
-# target_link_libraries(${OTHER_SERVICE} PRIVATE 
-#                              ${CMAKE_THREAD_LIBS_INIT} 
-#                              ${Poco_LIBRARIES}
-#                              "PocoData"
-#                              "PocoDataMySQL"
-#                              "mysqlclient"
-#                              ZLIB::ZLIB)
+target_link_libraries(other-service PRIVATE 
+                             ${CMAKE_THREAD_LIBS_INIT} 
+                             ${Poco_LIBRARIES}
+                             "PocoData"
+                             "PocoDataMySQL"
+                             "mysqlclient"
+                             ZLIB::ZLIB
+)
 
 
 

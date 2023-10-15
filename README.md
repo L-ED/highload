@@ -21,3 +21,10 @@ Rel(other_service,user_service, "/auth - проверка логина/паро�
 
 Clone / remote url using access token
 ```https://<username>:<access token>@gitlab.com/<username>/highload.git```
+
+TODO
+----
+
+- Create OpenAPI 3.0 specification (index.yaml) with Postman
+- Create script for creation database + scheme + initial data
+- Building from docker-compose.yml
