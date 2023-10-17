@@ -1,12 +1,22 @@
+#include <stdexcept>
+
+
 #include "config.h"
 
-Config::Config()
-{
-        _host = std::getenv("DB_HOST");
-        _port = std::getenv("DB_PORT");
-        _login = std::getenv("DB_LOGIN");
-        _password = std::getenv("DB_PASSWORD");
-        _database = std::getenv("DB_DATABASE");
+Config::Config() {
+
+    auto GetEnv = [](const std::string& name) {
+        char* ptr = std::getenv(name.c_str());
+        if (ptr == nullptr)
+            throw std::runtime_error("error: '" + name + "' does not exported");
+        return ptr;
+    };
+
+    _host = GetEnv("DB_HOST");
+    _port = GetEnv("DB_PORT");
+    _login = GetEnv("DB_LOGIN");
+    _password = GetEnv("DB_PASSWORD");
+    _database = GetEnv("DB_DATABASE");
 }
 
 Config &Config::get()

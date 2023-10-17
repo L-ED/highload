@@ -2,8 +2,8 @@
 
 #include <Poco/Net/HTMLForm.h>
 
-#include "../../database/user.h"
-#include "../../../common/utils.h"
+#include <database/User.h>
+#include <utils/utils.h>
 #include "user_handler.h"
 
 using Poco::Net::HTMLForm;

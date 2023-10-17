@@ -4,11 +4,8 @@
 #include <Poco/Net/HTTPServerRequest.h>
 #include <Poco/Net/HTTPServerResponse.h>
 
-class ProductHandler : public Poco::Net::HTTPRequestHandler {
-private:
-    std::string format_;
-
+class DeliveryHandler : public Poco::Net::HTTPRequestHandler {
 public:
-    ProductHandler(const std::string& format) : format_(format) { }
     void handleRequest(Poco::Net::HTTPServerRequest &request, Poco::Net::HTTPServerResponse &response) override;
 };
+

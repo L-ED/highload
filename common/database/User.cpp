@@ -1,4 +1,4 @@
-#include "user.h"
+#include "User.h"
 #include "database.h"
 #include "../config/config.h"
 

@@ -1,66 +1,64 @@
-version: '2.1'
+version: '3.3'
 
 services:
-  mai-db-node-ex01:
+  db-node-1:
     build:
-      context: mariadb
+      context: docker/mariadb
       dockerfile: Dockerfile
-    container_name: mai-db-node-ex01
-    restart: unless-stopped
+    container_name: db-node-1
+    restart: always
     environment:
-      MYSQL_DATABASE: archdb
-      MYSQL_USER: stud
-      MYSQL_PASSWORD: stud
-      MYSQL_ROOT_PASSWORD: '1'
+      MYSQL_DATABASE: hl
+      MYSQL_USER: postgres
+      MYSQL_PASSWORD: postgres
+      MYSQL_ROOT_PASSWORD: postgres
     command: >
       --sql-mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
       --general-log=ON
       --log-queries-not-using-indexes=ON
-    networks:
-      - arch-network
-    ports:
-      - 3360:3306
     healthcheck:
-      test: "/usr/bin/mysql --user=stud --password=stud --execute \"SHOW DATABASES;\""
+      test: "/usr/bin/mysql --user=postgres --password=postgres --execute \"SHOW DATABASES;\""
       timeout: 20s
       retries: 5
+    ports:
+      - 3306:3306
     volumes:
-      - db-node-ex01-data:/var/lib/mysql
+      - db-node-1-data:/var/lib/mysql
 
-  my_service:
+  user-service:
     build:
-      context: my_service
-      dockerfile: Dockerfile
-    container_name: my_service
+      context: .
+    image: uservice:hl
+    entrypoint: /app/build/user-service
+    container_name: user-service
     environment:
-      - DB_HOST=mai-db-node-ex01
+      - DB_HOST=db-node-1
       - DB_PORT=3306
-      - DB_LOGIN=stud
-      - DB_PASSWORD=stud
-      - DB_DATABASE=archdb
+      - DB_LOGIN=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=hl
     ports:
       - 8080:8080
-    networks:
-      - arch-network
     depends_on:
-      mai-db-node-ex01:
+      db-node-1:
         condition: service_healthy
-  other_server:
+
+  delivery-service:
     build:
-      context: other_server
-      dockerfile: Dockerfile
-    container_name: other_server
+      context: .
+    image: uservice:hl
+    entrypoint: /app/build/delivery-service
+    container_name: delivery-service
     environment:
-      - SERVICE_HOST=my_service
+      - DB_HOST=db-node-1
+      - DB_PORT=3306
+      - DB_LOGIN=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=hl
+      - SERVICE_HOST=user-service
     ports:
       - 8081:8081
-    networks:
-      - arch-network
-
+    depends_on:
+      - user-service
 volumes:
-  db-node-ex01-data:
-
-networks:
-  arch-network:
-    driver: "bridge"
-    external: false
+  db-node-1-data:

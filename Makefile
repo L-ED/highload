@@ -1,26 +1,30 @@
 # Rest service ---- ---- ---- ---- ----
 
-.PHONY: rest-image
-rest-image:
-	docker build --rm --no-cache -t rest-service:hl -f docker/rest-service/Dockerfile .
+.PHONY: image
+image:
+	docker build --rm --no-cache -t uservice:hl .
 
-.PHONY: build-rest
-build-rest:
-	cmake --build build --target rest-service -- -j4
+.PHONY: image-build
+image-build:
+	docker build --rm --no-cache -t uservice-build:hl -f docker/Dockerfile_build .
 
-.PHONY: run-rest
-run-rest:
-	./run-rest.sh
+.PHONY: build-user
+build-user:
+	cmake --build build --config Debug --target user-service -- -j4
+
+.PHONY: run-user
+run-user:
+	./run-user.sh
 
 # Other service ---- ---- ---- ---- ----
 
-.PHONY: build-other
-build-other:
-	cmake --build build --target other-service -- -j4
+.PHONY: build-delivery
+build-delivery:
+	cmake --build build --config Debug --target delivery-service -- -j4
 
-.PHONY: run-other
-run-other:
-	./run-other.sh
+.PHONY: run-delivery
+run-delivery:
+	./run-delivery.sh
 
 # Database ---- ---- ---- ---- ----
 
@@ -32,3 +36,13 @@ run-db:
 		--env MYSQL_PASSWORD=postgres \
 		--env MYSQL_ROOT_PASSWORD=postgres \
 		mariadb:hl 
+
+# Other service ---- ---- ---- ---- ----
+.PHONY: up
+up:
+	docker compose up
+
+.PHONY: down
+down:
+	docker compose down
+

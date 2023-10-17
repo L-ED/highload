@@ -1,6 +1,15 @@
 {
     "User": [
         {
+            "firstName": "admin",
+            "lastName": "admin",
+            "email": "email-admin@bk.ru",
+            "title": "title-admin",
+            "login": "admin",
+            "password": "admin",
+            "__test_object_id": 0
+        },
+        {
             "firstName": "user-1",
             "lastName": "lastName-1",
             "email": "email-1@bk.ru",

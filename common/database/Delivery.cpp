@@ -31,8 +31,8 @@ namespace database {
                     `reciever_id` INT NOT NULL,
                     `product_id` INT NOT NULL,
 
-                    FOREIGN KEY (`sender_id`) REFERENCES User(`id`),
-                    FOREIGN KEY (`reciever_id`) REFERENCES User(`id`),
+                    -- FOREIGN KEY (`sender_id`) REFERENCES User(`id`),
+                    -- FOREIGN KEY (`reciever_id`) REFERENCES User(`id`),
                     FOREIGN KEY (`product_id`) REFERENCES Product(`id`),
                     PRIMARY KEY (`id`),
                     CONSTRAINT sender_not_equal_reciever CHECK (sender_id <> reciever_id)

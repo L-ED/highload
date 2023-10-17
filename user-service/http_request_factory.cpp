@@ -1,9 +1,6 @@
 #include <iostream>
 
-#include "handlers/user_handler.h"
-#include "handlers/product_handler.h"
-#include "handlers/delivery_handler.h"
-
+#include "user_handler.h"
 #include "http_request_factory.h"
 
 using Poco::Net::HTTPServerRequest;
@@ -29,18 +26,6 @@ HTTPRequestHandler* HTTPRequestFactory::createRequestHandler(const HTTPServerReq
         StartsWith(request.getURI(),"/api/users/search") ||
         StartsWith(request.getURI(),"/api/users/self")) 
         return new UserHandler(format_);
-
-    // Create product => POST /api/products + JSON
-    // Get user's products => GET /api/products?&userId=0
-    // Create delivery => POST /api/delivery/ + JSON
-
-    // Get delivery info => GET /api/delivery?senderId=0&recieverId=0
-
-    if (StartsWith(request.getURI(), "/api/products"))
-        return new AuthRequired<ProductHandler>();
-
-    if (StartsWith(request.getURI(), "/api/deliveries"))
-        return new AuthRequired<DeliveryHandler>();
 
     return 0;
 }

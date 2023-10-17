@@ -2,15 +2,14 @@
 
 #include <Poco/Net/HTMLForm.h>
 
-#include "../../database/Delivery.h"
+#include <database/Delivery.h>
 #include "delivery_handler.h"
 
 using Poco::Net::HTMLForm;
 using Poco::Net::HTTPServerRequest;
 using Poco::Net::HTTPServerResponse;
 
-void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]] HTTPServerResponse &response) {
-
+void DeliveryHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
     try {
         // Create delivery from JSON body
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST && request.getContentType() == "application/json") {
@@ -28,9 +27,11 @@ void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]]
 
             auto& out = response.send();
             Poco::JSON::Stringifier::stringify(delivery.toJSON(), out);
+            return;
         }
         else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_GET) {
             // Select deliveries using filters from query string
+
             HTMLForm form(request, request.stream());
 
             std::vector<database::Delivery> deliveries;
@@ -40,7 +41,6 @@ void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]]
                 sender_id = atol(form.get("senderId").c_str());
             if (form.has("recieverId"))
                 reciever_id = atol(form.get("recieverId").c_str());
-
             deliveries = database::Delivery::Select(sender_id, reciever_id);
 
             auto result = Poco::JSON::Array();
@@ -49,7 +49,9 @@ void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]]
             response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
             response.setContentType("application/json");
             auto& out = response.send();
+
             Poco::JSON::Stringifier::stringify(result, out);
+            return;
         }
 
     }
@@ -61,8 +63,6 @@ void DeliveryHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]]
     }
 
     response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN);
-    response.setChunkedTransferEncoding(true);
-    response.setContentType("application/json");
     response.send();
 }
 

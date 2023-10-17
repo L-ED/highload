@@ -26,52 +26,67 @@ link_directories("third_party/poco/cmake-build/package/lib")
 SET(CMAKE_CXX_STANDARD 17)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(rest-service
-    rest-service/main.cpp 
-    rest-service/config/config.cpp 
-    rest-service/web_server/http_request_factory.cpp
-    rest-service/web_server/handlers/user_handler.cpp
-    rest-service/web_server/handlers/product_handler.cpp
-    rest-service/web_server/handlers/delivery_handler.cpp
-    rest-service/database/database.cpp
-    rest-service/database/user.cpp
-    rest-service/database/Product.cpp
-    rest-service/database/Delivery.cpp
+add_library(common
+    common/database/database.cpp
+    common/database/User.cpp
+    common/database/Product.cpp
+    common/database/Delivery.cpp
+    common/config/config.cpp
 )
-
-
-target_include_directories(rest-service PRIVATE "${CMAKE_BINARY_DIR}")
-target_compile_options(rest-service PRIVATE -Wall -Wextra -pedantic -Werror )
-set_target_properties(rest-service PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(rest-service PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-
-target_link_libraries(rest-service PRIVATE 
-                             ${CMAKE_THREAD_LIBS_INIT} 
-                             ${Poco_LIBRARIES}
-                             "PocoData"
-                             "PocoDataMySQL"
-                             "mysqlclient"
-                             ZLIB::ZLIB)
-
+target_compile_options(common PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(common PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+target_link_libraries(common PRIVATE 
+    ${CMAKE_THREAD_LIBS_INIT} 
+    ${Poco_LIBRARIES}
+    "PocoData"
+    "PocoDataMySQL"
+    "mysqlclient"
+    ZLIB::ZLIB
+)
+include_directories(${CMAKE_SOURCE_DIR}/common)
 
 
 
-add_executable(other-service other-service/main.cpp)
-target_include_directories(other-service PRIVATE "${CMAKE_BINARY_DIR}")
-target_compile_options(other-service PRIVATE -Wall -Wextra -pedantic -Werror )
-set_target_properties(other-service PROPERTIES LINKER_LANGUAGE CXX)
-set_target_properties(other-service PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-
-target_link_libraries(other-service PRIVATE 
-                             ${CMAKE_THREAD_LIBS_INIT} 
-                             ${Poco_LIBRARIES}
-                             "PocoData"
-                             "PocoDataMySQL"
-                             "mysqlclient"
-                             ZLIB::ZLIB
+add_executable(user-service
+    user-service/main.cpp 
+    user-service/http_request_factory.cpp
+    user-service/user_handler.cpp
+)
+target_include_directories(user-service PRIVATE "${CMAKE_BINARY_DIR}")
+target_compile_options(user-service PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(user-service PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(user-service PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+target_link_libraries(user-service PRIVATE 
+    ${CMAKE_THREAD_LIBS_INIT} 
+    ${Poco_LIBRARIES}
+    "PocoData"
+    "PocoDataMySQL"
+    "mysqlclient"
+    ZLIB::ZLIB
+    common
 )
 
 
 
 
 
+add_executable(delivery-service
+    delivery-service/main.cpp
+    delivery-service/http_request_factory.cpp
+    delivery-service/delivery_handler.cpp
+    delivery-service/product_handler.cpp
+)
+target_include_directories(delivery-service PRIVATE "${CMAKE_BINARY_DIR}")
+target_compile_options(delivery-service PRIVATE -Wall -Wextra -pedantic -Werror )
+set_target_properties(delivery-service PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(delivery-service PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+target_link_libraries(delivery-service PRIVATE 
+    ${CMAKE_THREAD_LIBS_INIT} 
+    ${Poco_LIBRARIES}
+    "PocoData"
+    "PocoDataMySQL"
+    "mysqlclient"
+    ZLIB::ZLIB
+    common
+)

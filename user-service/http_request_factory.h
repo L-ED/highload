@@ -9,7 +9,7 @@
 template <typename T>
 class AuthRequired : public Poco::Net::HTTPRequestHandler {
 private:
-    T handler{""};
+    T handler;
 
 public:
     void handleRequest(Poco::Net::HTTPServerRequest& request, Poco::Net::HTTPServerResponse& response) override {

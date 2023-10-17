@@ -29,10 +29,26 @@ namespace database {
                     `owner_id` INT NOT NULL,
                     `name` VARCHAR(256) NOT NULL,
 
-                    FOREIGN KEY (`owner_id`) REFERENCES User(`id`),
+                    -- FOREIGN KEY (`owner_id`) REFERENCES User(`id`),
                     PRIMARY KEY (`id`)
                 );
             )",now;
+            
+            // Poco::Data::Session session = database::Database::get().create_session();
+            // for (const auto& hint : database::Database::GetAllHints()) {
+            //     Statement create_stmt(session);
+            //     create_stmt << R"(
+            //         CREATE TABLE IF NOT EXISTS `Product` (
+            //             `id` INT NOT NULL AUTO_INCREMENT,
+            //             `owner_id` INT NOT NULL,
+            //             `name` VARCHAR(256) NOT NULL,
+
+            //             -- FOREIGN KEY (`owner_id`) REFERENCES User(`id`),
+            //             PRIMARY KEY (`id`)
+            //         );
+            //     )" << hint,now;
+            // }
+
         }
         catch (Poco::Data::MySQL::ConnectionException& e) {
             std::cout << "connection:" << e.what() << std::endl;
@@ -42,8 +58,11 @@ namespace database {
             std::cout << "statement:" << e.what() << std::endl;
             throw;
         }
+        catch (...) {
+            std::cout << "Exception: " << std::endl;
+        }
     }
-
+    
     Poco::JSON::Object::Ptr Product::toJSON() const {
         Poco::JSON::Object::Ptr root = new Poco::JSON::Object();
 
