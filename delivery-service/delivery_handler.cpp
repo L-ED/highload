@@ -14,8 +14,9 @@ void DeliveryHandler::handleRequest(HTTPServerRequest& request, HTTPServerRespon
         // Create delivery from JSON body
         if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST && request.getContentType() == "application/json") {
             std::string body(std::istreambuf_iterator<char>(request.stream()), {});
+            std::cout << body << std::endl;
             auto delivery = database::Delivery::fromJSON(body);
-
+            
             std::cout << "[INFO] Inserting " << delivery << std::endl;
 
             delivery.Save();
@@ -35,12 +36,12 @@ void DeliveryHandler::handleRequest(HTTPServerRequest& request, HTTPServerRespon
             HTMLForm form(request, request.stream());
 
             std::vector<database::Delivery> deliveries;
-            long sender_id = std::numeric_limits<long>::max();
-            long reciever_id = std::numeric_limits<long>::max();
+            std::string sender_id;
+            std::string reciever_id;
             if (form.has("senderId"))
-                sender_id = atol(form.get("senderId").c_str());
+                sender_id = form.get("senderId");
             if (form.has("recieverId"))
-                reciever_id = atol(form.get("recieverId").c_str());
+                reciever_id = form.get("recieverId");
             deliveries = database::Delivery::Select(sender_id, reciever_id);
 
             auto result = Poco::JSON::Array();
@@ -56,7 +57,7 @@ void DeliveryHandler::handleRequest(HTTPServerRequest& request, HTTPServerRespon
 
     }
     catch (const std::exception& e) {
-        std::cout << "[ERROR] " << e.what() << std::endl;
+        std::cout << "[ERROR] DeliveryHandler::handleRequest: " << e.what() << std::endl;
         response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
         response.send();
         return;

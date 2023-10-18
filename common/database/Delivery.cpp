@@ -24,28 +24,22 @@ namespace database {
         try {
             Poco::Data::Session session = database::Database::get().create_session();
             Statement create_stmt(session);
+
+            // Statement drop_stmt(session);
+            // drop_stmt << "DROP TABLE IF EXISTS `Delivery`", now;
+            // std::cout << "-- " << drop_stmt.toString() << std::endl;
+
             create_stmt << R"(
                 CREATE TABLE IF NOT EXISTS `Delivery` (
                     `id` INT NOT NULL AUTO_INCREMENT,
-                    `sender_id` INT NOT NULL,
-                    `reciever_id` INT NOT NULL,
+                    `sender_id` VARCHAR(36) NOT NULL,
+                    `reciever_id` VARCHAR(36) NOT NULL,
                     `product_id` INT NOT NULL,
 
-                    -- FOREIGN KEY (`sender_id`) REFERENCES User(`id`),
-                    -- FOREIGN KEY (`reciever_id`) REFERENCES User(`id`),
                     FOREIGN KEY (`product_id`) REFERENCES Product(`id`),
                     PRIMARY KEY (`id`),
                     CONSTRAINT sender_not_equal_reciever CHECK (sender_id <> reciever_id)
-                );
-
-                -- CREATE FUNCTION senderIsProductOwner (owner_id_arg INT) RETURNS INT AS
-                -- BEGIN
-                --     IF EXISTS (SELECT * FROM `Product` AS pr WHERE pr.owner_id = owner_id_arg AND product_id = product_id_arg)
-                --         return 'True'
-                --     return 'False'
-                -- END
-
-                -- ALTER TABLE `Delivery` ADD CONSTRAINT sender_must_be_product_owner CHECK(senderIsProductOwner(owner_id, product_id) = 'True');
+                ); -- sharding:0
             )",now;
         }
         catch (Poco::Data::MySQL::ConnectionException& e) {
@@ -76,8 +70,8 @@ namespace database {
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 
         delivery.id_ = object->has("id") ? object->getValue<long>("id") : 0;
-        delivery.sender_id_ = object->getValue<long>("senderId");
-        delivery.reciever_id_ = object->getValue<long>("recieverId");
+        delivery.sender_id_ = object->getValue<std::string>("senderId");
+        delivery.reciever_id_ = object->getValue<std::string>("recieverId");
         delivery.product_id_ = object->getValue<long>("productId");
 
         return delivery;
@@ -112,7 +106,7 @@ namespace database {
         }
     }
 
-    std::vector<Delivery> Delivery::Select(long sender_id, long reciever_id) {
+    std::vector<Delivery> Delivery::Select(std::string sender_id, std::string reciever_id) {
         try {
             Poco::Data::Session session = database::Database::get().create_session();
             Statement select(session);
@@ -122,16 +116,16 @@ namespace database {
             select << "SELECT id, sender_id, reciever_id, product_id FROM `Delivery`",
                 into(a.id_), into(a.sender_id_), into(a.reciever_id_), into(a.product_id_);
 
-            if (sender_id != std::numeric_limits<long>::max() || reciever_id != std::numeric_limits<long>::max()) {
+            if (!sender_id.empty() || !reciever_id.empty()) {
                 select << " WHERE ";
-                if (sender_id != std::numeric_limits<long>::max())
+                if (!sender_id.empty())
                     select << "sender_id = ?" , use(sender_id);
                 else
                     select << "1=1";
 
                 select << " AND ";
 
-                if (reciever_id != std::numeric_limits<long>::max())
+                if (!reciever_id.empty())
                     select << "reciever_id = ?" , use(reciever_id);
                 else
                     select << "1=1";
@@ -166,6 +160,8 @@ namespace database {
                 use(reciever_id_),
                 use(product_id_);
 
+            std::cout << "-- " << insert.toString() << std::endl;
+
             insert.execute();
 
             Poco::Data::Statement select(session);
@@ -176,14 +172,18 @@ namespace database {
             if (!select.done()) {
                 select.execute();
             }
-            std::cout << "[INFO] Inserted product " << id_ << std::endl;
+            std::cout << "[INFO] Inserted delivery " << id_ << std::endl;
         }
         catch (Poco::Data::MySQL::ConnectionException &e) {
-            std::cout << "connection:" << e.what() << std::endl;
+            std::cout << "connection:" << e.displayText() << std::endl;
             throw;
         }
         catch (Poco::Data::MySQL::StatementException &e) {
-            std::cout << "statement:" << e.what() << std::endl;
+            std::cout << "statement:" << e.message() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::MySQLException& e) {
+            std::cout << "MySQLException:" << e.displayText() << std::endl;
             throw;
         }
     }

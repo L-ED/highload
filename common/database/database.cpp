@@ -30,6 +30,7 @@ namespace database {
     }
 
     size_t Database::GetMaxShardsNumber(){
+        // return 1;
         return 2;
     }
 
@@ -43,8 +44,8 @@ namespace database {
         return result;
     }
 
-    std::string Database::GetShardingHint(const std::string& login, const std::string& password) {
-        size_t shard_number = std::hash<std::string>{}(login + password) % GetMaxShardsNumber();
+    std::string Database::GetShardingHint(const std::string& uuid) {
+        size_t shard_number = std::hash<std::string>{}(uuid) % GetMaxShardsNumber();
 
         std::string result = "-- sharding:";
         result += std::to_string(shard_number);

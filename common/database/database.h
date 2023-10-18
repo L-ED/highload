@@ -20,7 +20,7 @@ namespace database{
 
         static size_t GetMaxShardsNumber();
         static std::vector<std::string> GetAllHints();
-        static std::string GetShardingHint(const std::string& login, const std::string& password);
+        static std::string GetShardingHint(const std::string& uuid);
     };
 }
 #endif

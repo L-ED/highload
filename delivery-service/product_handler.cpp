@@ -35,8 +35,8 @@ void ProductHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]] 
 
             std::vector<database::Product> products;
             if (form.has("ownerId")) {
-                long owner_id = atol(form.get("ownerId").c_str());
-                products = database::Product::SelectByOwnerId(owner_id);
+                std::string owner_id = form.get("ownerId");
+                products = database::Product::SelectByOwnerId(std::move(owner_id));
             }
             else {
                 products = database::Product::SelectAll();
@@ -53,7 +53,7 @@ void ProductHandler::handleRequest(HTTPServerRequest &request, [[maybe_unused]] 
         }
     }
     catch (const std::exception& e) {
-        std::cout << "[ERROR] " << e.what() << std::endl;
+        std::cout << "[ERROR] ProductHandler::handleRequest: " << e.what() << std::endl;
         response.setStatus(Poco::Net::HTTPResponse::HTTP_INTERNAL_SERVER_ERROR);
         response.send();
         return;

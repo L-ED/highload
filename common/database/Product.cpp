@@ -22,33 +22,26 @@ namespace database {
         std::cout << "[INFO] Creating Product table" << std::endl;
         try {
             Poco::Data::Session session = database::Database::get().create_session();
+
+            // Statement drop1(session);
+            // drop1 << "DROP TABLE IF EXISTS `Delivery`", now;
+            // std::cout << "-- " << drop1.toString() << std::endl;
+            // Statement drop2(session);
+            // drop2 << "DROP TABLE IF EXISTS `Product`", now;
+            // std::cout << "-- " << drop2.toString() << std::endl;
+
             Statement create_stmt(session);
             create_stmt << R"(
                 CREATE TABLE IF NOT EXISTS `Product` (
                     `id` INT NOT NULL AUTO_INCREMENT,
-                    `owner_id` INT NOT NULL,
+                    `owner_id` VARCHAR(36) NOT NULL,
                     `name` VARCHAR(256) NOT NULL,
 
-                    -- FOREIGN KEY (`owner_id`) REFERENCES User(`id`),
                     PRIMARY KEY (`id`)
-                );
+                ); -- sharding:0
             )",now;
-            
-            // Poco::Data::Session session = database::Database::get().create_session();
-            // for (const auto& hint : database::Database::GetAllHints()) {
-            //     Statement create_stmt(session);
-            //     create_stmt << R"(
-            //         CREATE TABLE IF NOT EXISTS `Product` (
-            //             `id` INT NOT NULL AUTO_INCREMENT,
-            //             `owner_id` INT NOT NULL,
-            //             `name` VARCHAR(256) NOT NULL,
 
-            //             -- FOREIGN KEY (`owner_id`) REFERENCES User(`id`),
-            //             PRIMARY KEY (`id`)
-            //         );
-            //     )" << hint,now;
-            // }
-
+            std::cout << "-- " << create_stmt.toString() << std::endl;
         }
         catch (Poco::Data::MySQL::ConnectionException& e) {
             std::cout << "connection:" << e.what() << std::endl;
@@ -80,7 +73,7 @@ namespace database {
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 
         product.id_ = object->has("id") ? object->getValue<long>("id") : 0;
-        product.owner_id_ = object->getValue<long>("ownerId");
+        product.owner_id_ = object->getValue<std::string>("ownerId");
         product.name_ = object->getValue<std::string>("name");
 
         return product;
@@ -114,7 +107,7 @@ namespace database {
         }
     }
 
-    std::vector<Product> Product::SelectByOwnerId(long owner_id) {
+    std::vector<Product> Product::SelectByOwnerId(std::string owner_id) {
         try {
             Poco::Data::Session session = database::Database::get().create_session();
             Statement select(session);
@@ -152,6 +145,8 @@ namespace database {
                 use(owner_id_),
                 use(name_);
 
+            std::cout << "-- " << insert.toString() << std::endl;
+
             insert.execute();
 
             Poco::Data::Statement select(session);
@@ -165,11 +160,15 @@ namespace database {
             std::cout << "[INFO] Inserted product " << id_ << std::endl;
         }
         catch (Poco::Data::MySQL::ConnectionException &e) {
-            std::cout << "connection:" << e.what() << std::endl;
+            std::cout << "connection:" << e.displayText() << std::endl;
             throw;
         }
         catch (Poco::Data::MySQL::StatementException &e) {
-            std::cout << "statement:" << e.what() << std::endl;
+            std::cout << "statement:" << e.displayText() << std::endl;
+            throw;
+        }
+        catch (Poco::Data::MySQL::MySQLException& e) {
+            std::cout << "MySQLException:" << e.displayText() << std::endl;
             throw;
         }
     }

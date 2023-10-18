@@ -83,11 +83,10 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
     const auto method = request.getMethod();
     try {
         if (form.has("id") && (method == Poco::Net::HTTPRequest::HTTP_GET)) {
-            long id = atol(form.get("id").c_str());
+            const std::string& uuid = form.get("id");
 
-            std::optional<database::User> result = database::User::read_by_id(id);
-            if (result)
-            {
+            std::optional<database::User> result = database::User::read_by_id(uuid);
+            if (result) {
                 response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                 response.setChunkedTransferEncoding(true);
                 response.setContentType("application/json");
@@ -95,8 +94,7 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
                 Poco::JSON::Stringifier::stringify(remove_password(result->toJSON()), ostr);
                 return;
             }
-            else
-            {
+            else {
                 response.setStatus(Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND);
                 response.setChunkedTransferEncoding(true);
                 response.setContentType("application/json");
@@ -116,7 +114,6 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
             std::string scheme;
             std::string info;
             request.getCredentials(scheme, info);
-            // std::cout << "scheme: " << scheme << " identity: " << info << std::endl;
 
             std::string login, password;
             if (scheme == "Basic") {

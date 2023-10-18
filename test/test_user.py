@@ -58,11 +58,14 @@ def insert_test_data():
 
 def test_user_by_id():
     print('test_user_by_id')
-    ids = range(1, 4)
-    for id in ids:
-        user = user_by_id(id)
-        assert user['id'] == id
-        print(user)
+
+    users = user_all()
+
+    for user in users:
+        candidate = user_by_id(user['id'])
+        assert candidate['id'] == user['id']
+        assert candidate['login'] == user['login']
+        print(candidate)
 
 def test_auth():
     data = get_test_data()
@@ -81,6 +84,7 @@ def test_auth():
         pass
 
 def test_search():
+    print('test_search')
     MUST_USER_MATHCHED_NUMBER = 3
     users = user_search('user', 'last')
     assert len(users) == MUST_USER_MATHCHED_NUMBER
@@ -95,5 +99,5 @@ if __name__ == '__main__':
     # insert_test_data()
 
     test_auth()
-    # test_search()
-    # test_user_by_id()
+    test_search()
+    test_user_by_id()

@@ -30,7 +30,7 @@ run-delivery:
 
 .PHONY: run-db
 run-db:
-	docker run --name database --detach --rm -p 3306:3306 \
+	docker run --name database --detach --rm -p 6033:3306 \
 		--env MYSQL_DATABASE=hl \
 		--env MYSQL_USER=postgres \
 		--env MYSQL_PASSWORD=postgres \
