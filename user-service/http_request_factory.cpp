@@ -24,6 +24,7 @@ HTTPRequestHandler* HTTPRequestFactory::createRequestHandler(const HTTPServerReq
     std::cout << request.getMethod() << " " << request.getURI()<< std::endl;
     if (StartsWith(request.getURI(),"/api/users") ||
         StartsWith(request.getURI(),"/api/users/search") ||
+        StartsWith(request.getURI(),"/api/users/all") ||
         StartsWith(request.getURI(),"/api/users/self")) 
         return new UserHandler(format_);
 

@@ -55,3 +55,5 @@ bind-address	= 0.0.0.0
 
 # Disabling symbolic-links is recommended to prevent assorted security risks
 symbolic-links=0
+
+[mysqld]

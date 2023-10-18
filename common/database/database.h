@@ -10,17 +10,17 @@
 
 namespace database{
     class Database{
-        private:
-            std::string _connection_string;
-            std::unique_ptr<Poco::Data::SessionPool> _pool;
-            Database();
-        public:
-            static Database& get();
-            Poco::Data::Session create_session();
+    private:
+        std::string _connection_string;
+        std::unique_ptr<Poco::Data::SessionPool> _pool;
+        Database();
+    public:
+        static Database& get();
+        Poco::Data::Session create_session();
 
-            static size_t GetMaxShard();
-            static std::string ShardingHint(long from,long to);
-            static std::vector<std::string> GetAllHints();
+        static size_t GetMaxShardsNumber();
+        static std::vector<std::string> GetAllHints();
+        static std::string GetShardingHint(const std::string& login, const std::string& password);
     };
 }
 #endif

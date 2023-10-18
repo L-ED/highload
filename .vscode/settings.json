@@ -63,6 +63,7 @@
         "thread": "cpp",
         "cfenv": "cpp",
         "typeinfo": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "csignal": "cpp"
     }
 }

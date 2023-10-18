@@ -46,8 +46,6 @@ namespace database
         void save_to_mysql();
 
         Poco::JSON::Object::Ptr toJSON() const;
-
-        std::string GetShardingHint();
     };
 }
 

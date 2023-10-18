@@ -159,6 +159,19 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
 
             return;
         }
+        else if (hasSubstr(request.getURI(), "/api/users/all") && (method == Poco::Net::HTTPRequest::HTTP_GET)) {
+            auto results = database::User::read_all();
+            Poco::JSON::Array arr;
+            for (auto s : results)
+                arr.add(remove_password(s.toJSON()));
+            response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
+            response.setChunkedTransferEncoding(true);
+            response.setContentType("application/json");
+            std::ostream &ostr = response.send();
+            Poco::JSON::Stringifier::stringify(arr, ostr);
+
+            return;
+        }
         else if (request.getMethod() == Poco::Net::HTTPRequest::HTTP_POST) {
             if (form.has("first_name") && form.has("last_name") && form.has("email") && form.has("title") && form.has("login") && form.has("password")) {
                 database::User user;

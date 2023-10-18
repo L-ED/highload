@@ -27,4 +27,9 @@ TODO
 
 - Create OpenAPI 3.0 specification (index.yaml) with Postman
 - Create script for creation database + scheme + initial data
-- Building from docker-compose.yml
+
+
+Замечания
+----
+- Во время шардинга мы теряем свойство уникальности у идентификатора пользователя. Уникальным теперь является пара шард + идентификатор
+

@@ -1,7 +1,8 @@
 #include "database.h"
 #include "../config/config.h"
 
-namespace database{
+namespace database {
+
     Database::Database(){
         _connection_string += "host=";
         _connection_string += Config::get().get_host();
@@ -28,13 +29,13 @@ namespace database{
         return Poco::Data::Session(_pool->get());
     }
 
-    size_t Database::GetMaxShard(){
+    size_t Database::GetMaxShardsNumber(){
         return 2;
     }
 
     std::vector<std::string> Database::GetAllHints(){
         std::vector<std::string> result;
-        for(size_t i = 0; i <= GetMaxShard(); ++i){
+        for(size_t i = 0; i < GetMaxShardsNumber(); ++i) {
             std::string shard_name = "-- sharding:";
             shard_name += std::to_string(i);
             result.push_back(shard_name);
@@ -42,15 +43,8 @@ namespace database{
         return result;
     }
 
-    std::string Database::ShardingHint(long from, long to){
-
-        std::string key;
-
-        key += std::to_string(from);
-        key += ";";
-        key += std::to_string(to);
-
-        size_t shard_number = std::hash<std::string>{}(key) % GetMaxShard();
+    std::string Database::GetShardingHint(const std::string& login, const std::string& password) {
+        size_t shard_number = std::hash<std::string>{}(login + password) % GetMaxShardsNumber();
 
         std::string result = "-- sharding:";
         result += std::to_string(shard_number);

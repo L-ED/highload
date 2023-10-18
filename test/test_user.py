@@ -26,25 +26,53 @@ def user_self(login, password):
     return res.json()
 
 def user_search(first_name, last_name):
+    print(f'Searching for first_name={first_name} last_name={last_name}')
     res = requests.get(f'{BASE_USER_SERVICE_URL}/api/users/search', params={
         'first_name': first_name,
         'last_name': last_name
     })
     res.raise_for_status()
+    payload = res.json()
+    print(*payload, sep='\n')
+    return payload
+
+def user_by_id(id):
+    res = requests.get(f'{BASE_USER_SERVICE_URL}/api/users', params={ 'id': id })
+    res.raise_for_status()
     return res.json()
 
-def insert_test_data():
-    with open('test/data.json') as file:
-        data = json.load(file)
+def user_all():
+    res = requests.get(f'{BASE_USER_SERVICE_URL}/api/users/all')
+    res.raise_for_status()
+    return res.json()
 
+def get_test_data():
+    with open('test/data.json') as file:
+        return json.load(file)
+
+def insert_test_data():
+    data = get_test_data()
     users = data['User']
     for user in users:
         insert_user(user)
 
+def test_user_by_id():
+    print('test_user_by_id')
+    ids = range(1, 4)
+    for id in ids:
+        user = user_by_id(id)
+        assert user['id'] == id
+        print(user)
 
 def test_auth():
-    user = user_self('login-2', 'pass-2')
-    assert user['login'] == 'login-2'
+    data = get_test_data()
+    users = data['User']
+
+    for user in users:
+        l, p = user['login'], user['password']
+        res = user_self(l, p)
+        assert res['login'] == l
+        print(res)
 
     try:
         user = user_self('login-2', 'pass-3')
@@ -53,8 +81,12 @@ def test_auth():
         pass
 
 def test_search():
+    MUST_USER_MATHCHED_NUMBER = 3
     users = user_search('user', 'last')
-    assert len(users) > 0
+    assert len(users) == MUST_USER_MATHCHED_NUMBER
+
+    users = user_search('admin', 'admin')
+    assert len(users) == 1
 
     users = user_search('not exists', 'last')
     assert len(users) == 0
@@ -63,4 +95,5 @@ if __name__ == '__main__':
     # insert_test_data()
 
     test_auth()
-    test_search()
+    # test_search()
+    # test_user_by_id()

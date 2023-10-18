@@ -1,3 +1,4 @@
+#include <csignal>
 #include "Poco/Net/HTTPServer.h"
 #include "Poco/Net/ServerSocket.h"
 #include "Poco/DateTimeFormat.h"
@@ -7,7 +8,6 @@
 #include <database/User.h>
 #include <database/Product.h>
 #include <database/Delivery.h>
-
 
 class HTTPWebServer : public Poco::Util::ServerApplication
 {
@@ -42,8 +42,8 @@ private:
     bool _helpRequested;
 };
 
-int main(int argc, char*argv[]) 
-{
+int main(int argc, char*argv[]) {
+    std::signal(SIGTERM, [](int) { exit(0); });
     HTTPWebServer app;
     return app.run(argc, argv);
 }
