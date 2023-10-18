@@ -81,6 +81,7 @@ services:
     build:
       context: .
     image: uservice:hl
+    restart: unless-stopped
     entrypoint: /app/build/user-service
     container_name: user-service
     environment:
@@ -99,6 +100,7 @@ services:
     build:
       context: .
     image: uservice:hl
+    restart: unless-stopped
     entrypoint: /app/build/delivery-service
     container_name: delivery-service
     environment:
@@ -110,8 +112,8 @@ services:
       - SERVICE_HOST=user-service
     ports:
       - 8081:8081
-    # depends_on:
-    #   - user-service
+    depends_on:
+      - user-service
 volumes:
   db-node-1-data:
   db-node-2-data:
