@@ -4,23 +4,28 @@ project(hl_server C CXX)
 
 SET (OTHER_SERVICE "other_service")
 
-set(CMAKE_PREFIX_PATH "third_party/poco/cmake-build/package")
+set(CMAKE_PREFIX_PATH
+    "third_party/poco/cmake-build/package;third_party/redis-cpp/cmake-build/package"
+)
 
+find_package(redis-cpp)
 find_package(OpenSSL)
 find_package(Threads)
 find_package(ZLIB)
 find_package(Poco REQUIRED COMPONENTS Foundation Util Net XML JSON Crypto NetSSL)
-
 
 if(NOT ${Poco_FOUND})
     message(FATAL_ERROR "Poco C++ Libraries not found.")
 endif()
 
 include_directories(${Poco_INCLUDE_DIRS})
+include_directories(${redis-cpp_INCLUDE_DIR})
 include_directories("/usr/include/mysql")
 include_directories("/usr/local/include/mysql")
+
 link_directories("/usr/local/lib")
 link_directories("third_party/poco/cmake-build/package/lib")
+link_directories("third_party/redis-cpp/cmake-build/package/lib")
 
 
 SET(CMAKE_CXX_STANDARD 17)
@@ -31,6 +36,7 @@ add_library(common
     common/database/User.cpp
     common/database/Product.cpp
     common/database/Delivery.cpp
+    common/database/Cache.cpp
     common/config/config.cpp
 )
 target_compile_options(common PRIVATE -Wall -Wextra -pedantic -Werror )
@@ -43,6 +49,7 @@ target_link_libraries(common PRIVATE
     "PocoDataMySQL"
     "mysqlclient"
     ZLIB::ZLIB
+    redis-cpp
 )
 include_directories(${CMAKE_SOURCE_DIR}/common)
 

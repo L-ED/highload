@@ -42,11 +42,15 @@ namespace database
         std::string& uuid();
 
         static void init();
-        static std::optional<User> read_by_id(std::string uuid);
-        static std::optional<User> Auth(std::string &login, std::string &password);
         static std::vector<User> read_all();
         static std::vector<User> search(std::string first_name,std::string last_name);
+
+        static std::optional<User> SelectById(std::string uuid);
+        static std::optional<User> Auth(std::string &login, std::string &password);
         void save_to_mysql();
+        
+        void SaveToCache() const;
+        static std::optional<User> GetFromCache(const std::string& id);
 
         Poco::JSON::Object::Ptr toJSON() const;
 

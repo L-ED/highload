@@ -1,6 +1,5 @@
+#include <iostream>
 #include <stdexcept>
-
-
 #include "config.h"
 
 Config::Config() {
@@ -9,7 +8,7 @@ Config::Config() {
         char* ptr = std::getenv(name.c_str());
         if (ptr == nullptr)
             throw std::runtime_error("error: '" + name + "' does not exported");
-        return ptr;
+        return std::string(ptr);
     };
 
     _host = GetEnv("DB_HOST");
@@ -17,6 +16,12 @@ Config::Config() {
     _login = GetEnv("DB_LOGIN");
     _password = GetEnv("DB_PASSWORD");
     _database = GetEnv("DB_DATABASE");
+
+    use_cache_ = GetEnv("USE_CACHE").length();
+    std::cout << "[INFO] USE_CACHE: " << (use_cache_ ? "true" : "false") << std::endl;
+
+    cache_host_ = GetEnv("CACHE_HOST");
+    cache_port_ = GetEnv("CACHE_PORT");
 }
 
 Config &Config::get()

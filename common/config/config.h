@@ -12,6 +12,10 @@ class  Config{
         std::string _password;
         std::string _database;
 
+        std::string cache_host_;
+        std::string cache_port_;
+        bool use_cache_;
+
     public:
         static Config& get();
 
@@ -26,6 +30,10 @@ class  Config{
         const std::string& get_login() const ;
         const std::string& get_password() const ;
         const std::string& get_database() const ;
+
+        const std::string& get_cache_host() const { return cache_host_; }
+        const std::string& get_cache_port() const { return cache_port_; }
+        bool get_use_cache() const { return use_cache_; }
 };
 
 #endif

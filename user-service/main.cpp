@@ -30,7 +30,7 @@ protected:
             database::User::init();
             Poco::Net::ServerSocket svs(Poco::Net::SocketAddress("0.0.0.0", 8080));
             Poco::Net::HTTPServer srv(new HTTPRequestFactory(), svs, new Poco::Net::HTTPServerParams);
-                std::cout << "Server listening on http://0.0.0.0:8080" << std::endl;
+            std::cout << "Server listening on http://0.0.0.0:8080" << std::endl;
             srv.start();
             waitForTerminationRequest();
             srv.stop();
@@ -46,4 +46,5 @@ int main(int argc, char*argv[]) {
     std::signal(SIGTERM, [](int) { exit(0); });
     HTTPWebServer app;
     return app.run(argc, argv);
+    return 0;
 }

@@ -141,122 +141,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-
-
-
-  /api/products:
-    post:
-      summary: Создание товара (посылки)
-      requestBody:
-        description: "Описание посылки"
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - ownerId
-                - name
-              properties:
-                ownerId:
-                  description: "Идентификатор владельца"
-                  $ref: '#/components/schemas/user_id'
-                name:
-                  description: "Название посылки"
-                  type: string
-      responses:
-        '200':
-          description: "Созданная посылка"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/product"
-        '500':
-          description: Неожиданная ошибка
-    get:
-      summary: Получение посылок
-      parameters:
-      - name: ownerId
-        description: Идентификатор пользователя
-        in: query
-        required: false
-        schema:
-          $ref: '#/components/schemas/user_id'
-      responses:
-        '200':
-          description: Список посылок
-          content:
-            application/json:
-              schema:
-                $ref:  '#/components/schemas/products'
-        '500':
-          description: Неожиданная ошибка
-
-
-
-  /api/deliveries:
-    post:
-      summary: Создание доставки
-      requestBody:
-        description: "Описание посылки"
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - senderId
-                - recieverId
-                - productId
-              properties:
-                senderId:
-                  description: "Идентификатор отправителя"
-                  $ref: '#/components/schemas/user_id'
-                recieverId:
-                  description: "Идентификатор получателя"
-                  $ref: '#/components/schemas/user_id'
-                productId:
-                  description: "Идентификатор посылки"
-                  $ref: "#/components/schemas/product_id"
-      responses:
-        '200':
-          description: "Созданная доставка"
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/delivery"
-        '500':
-          description: Неожиданная ошибка
-    get:
-      summary: Получение посылок
-      parameters:
-      - name: senderId
-        description: Идентификатор отправителя
-        in: query
-        required: false
-        schema:
-          $ref: '#/components/schemas/user_id'
-      - name: recieverId
-        description: Идентификатор получателя
-        in: query
-        required: false
-        schema:
-          $ref: '#/components/schemas/user_id'
-      responses:
-        '200':
-          description: Список доставок
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/deliveries"
-        '500':
-          description: Неожиданная ошибка
-
-
-
 components:
   schemas:
     user_id:
       description: Уникальный идентификатор пользователя
-      type: integer
+      type: string
     users:
       type: array
       items:
@@ -295,51 +184,6 @@ components:
         message:
           description: Сообщение о ошибке
           type: string
-
-    product_id:
-      description: Уникальный идентификатор продукта (посылки)
-      type: integer
-    product:
-      type: object
-      required:
-        - id
-        - ownerId
-        - name
-      properties:
-        id:
-          $ref: '#/components/schemas/product_id'
-        ownerId:
-          $ref: '#/components/schemas/user_id'
-        name:
-          type: string
-    products:
-        type: array
-        items:
-          $ref: '#/components/schemas/product'
-
-    delivery_id:
-      description: Уникальный идентификатор доставки
-      type: integer
-    delivery:
-      type: object
-      required:
-        - id
-        - senderId
-        - recieverId
-        - productId
-      properties:
-        id:
-          $ref: '#/components/schemas/delivery_id'
-        senderId:
-          $ref: '#/components/schemas/user_id'
-        recieverId:
-          $ref: '#/components/schemas/user_id'
-        productId:
-          $ref: '#/components/schemas/user_id'
-    deliveries:
-        type: array
-        items:
-          $ref: '#/components/schemas/delivery'
 
   securitySchemes:
       basicAuth:     

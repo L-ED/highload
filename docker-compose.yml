@@ -8,8 +8,6 @@ services:
     image: mariadb:hl
     container_name: db-node-1
     restart: unless-stopped
-    # security_opt:
-    #   - seccomp=unconfined
     environment:
       MYSQL_DATABASE: hl
       MYSQL_USER: postgres
@@ -19,8 +17,6 @@ services:
       --sql-mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
       --general-log=ON
       --log-queries-not-using-indexes=ON
-    # networks:
-    #   - mai-network
     ports:
       - 3360:3306
     volumes:
@@ -32,8 +28,6 @@ services:
       dockerfile: Dockerfile
     image: mariadb:hl
     container_name: db-node-2
-    # security_opt:
-    #   - seccomp=unconfined
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: hl
@@ -44,8 +38,6 @@ services:
       --sql-mode='STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
       --general-log=ON
       --log-queries-not-using-indexes=ON
-    # networks:
-    #   - mai-network
     ports:
       - 3361:3306
     volumes:
@@ -64,9 +56,6 @@ services:
     #   --initial
     volumes:
       - proxysql-data:/var/lib/proxysql
-      # - ./docker/proxysql/proxysql.cnf:/etc/proxysql.cnf
-    # networks:
-    #   - mai-network
     ports:
       # Mysql Client Port
       - "6033:6033"
@@ -77,44 +66,54 @@ services:
       timeout: 20s
       retries: 5
 
-  user-service:
-    build:
-      context: .
-    image: uservice:hl
-    restart: unless-stopped
-    entrypoint: /app/build/user-service
-    container_name: user-service
-    environment:
-      - DB_HOST=proxysql
-      - DB_PORT=6033
-      - DB_LOGIN=postgres
-      - DB_PASSWORD=postgres
-      - DB_DATABASE=hl
+  cache:
+    image: redis:6.2-alpine
+    restart: always
     ports:
-      - 8080:8080
-    depends_on:
-      proxysql:
-        condition: service_healthy
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - cache:/data
 
-  delivery-service:
-    build:
-      context: .
-    image: uservice:hl
-    restart: unless-stopped
-    entrypoint: /app/build/delivery-service
-    container_name: delivery-service
-    environment:
-      - DB_HOST=proxysql
-      - DB_PORT=6033
-      - DB_LOGIN=postgres
-      - DB_PASSWORD=postgres
-      - DB_DATABASE=hl
-      - SERVICE_HOST=user-service
-    ports:
-      - 8081:8081
-    depends_on:
-      - user-service
+  # user-service:
+  #   build:
+  #     context: .
+  #   image: uservice:hl
+  #   restart: unless-stopped
+  #   entrypoint: /app/build/user-service
+  #   container_name: user-service
+  #   environment:
+  #     - DB_HOST=proxysql
+  #     - DB_PORT=6033
+  #     - DB_LOGIN=postgres
+  #     - DB_PASSWORD=postgres
+  #     - DB_DATABASE=hl
+  #   ports:
+  #     - 8080:8080
+  #   depends_on:
+  #     proxysql:
+  #       condition: service_healthy
+
+  # delivery-service:
+  #   build:
+  #     context: .
+  #   image: uservice:hl
+  #   restart: unless-stopped
+  #   entrypoint: /app/build/delivery-service
+  #   container_name: delivery-service
+  #   environment:
+  #     - DB_HOST=proxysql
+  #     - DB_PORT=6033
+  #     - DB_LOGIN=postgres
+  #     - DB_PASSWORD=postgres
+  #     - DB_DATABASE=hl
+  #     - SERVICE_HOST=user-service
+  #   ports:
+  #     - 8081:8081
+  #   depends_on:
+  #     - user-service
 volumes:
   db-node-1-data:
   db-node-2-data:
   proxysql-data:
+  cache:

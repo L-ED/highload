@@ -13,7 +13,17 @@ cd poco
 cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_DATA_MYSQL=ON -B cmake-build
 cmake --build cmake-build -- -j$(nproc)
 cmake --install cmake-build --prefix cmake-build/package
+
+
+cd third_party
+git clone https://github.com/tdv/redis-cpp.git
+cd redis-cpp
+cmake -DCMAKE_BUILD_TYPE=Release -B cmake-build
+cmake --build cmake-build -- -j$(nproc)
+cmake --install cmake-build --prefix cmake-build/package
 ```
+
+
 
 
 Database

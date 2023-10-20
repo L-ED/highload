@@ -37,6 +37,18 @@
                 {
                     "name": "DB_DATABASE",
                     "value": "hl"
+                },
+                {
+                    "name": "CACHE_HOST",
+                    "value": "localhost"
+                },
+                {
+                    "name": "CACHE_PORT",
+                    "value": "6379"
+                },
+                {
+                    "name": "USE_CACHE",
+                    "value": "1"
                 }
             ],
             "console": "externalTerminal",

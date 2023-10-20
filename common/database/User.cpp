@@ -1,7 +1,3 @@
-#include "User.h"
-#include "database.h"
-#include "../config/config.h"
-
 #include <Poco/Data/MySQL/Connector.h>
 #include <Poco/Data/MySQL/MySQLException.h>
 #include <Poco/Data/SessionFactory.h>
@@ -12,6 +8,11 @@
 
 #include <sstream>
 #include <exception>
+
+#include "User.h"
+#include "database.h"
+#include "../config/config.h"
+#include "Cache.h"
 
 using namespace Poco::Data::Keywords;
 using Poco::Data::Session;
@@ -76,25 +77,26 @@ namespace database
         root->set("email", _email);
         root->set("title", _title);
         root->set("login", _login);
-        // root->set("password", _password);
 
         return root;
     }
 
-    User User::fromJSON(const std::string &str)
-    {
+    User User::fromJSON(const std::string& str) {
         User user;
         Poco::JSON::Parser parser;
         Poco::Dynamic::Var result = parser.parse(str);
         Poco::JSON::Object::Ptr object = result.extract<Poco::JSON::Object::Ptr>();
 
+        std::cout << str << std::endl;
         user.uuid() = object->getValue<std::string>("id");
         user.first_name() = object->getValue<std::string>("first_name");
         user.last_name() = object->getValue<std::string>("last_name");
         user.email() = object->getValue<std::string>("email");
         user.title() = object->getValue<std::string>("title");
         user.login() = object->getValue<std::string>("login");
-        user.password() = object->getValue<std::string>("password");
+
+        if (object->has("password"))
+            user.password() = object->getValue<std::string>("password");
 
         return user;
     }
@@ -136,7 +138,16 @@ namespace database
         return {};
     }
 
-    std::optional<User> User::read_by_id(std::string uuid) {
+    std::optional<User> User::SelectById(std::string uuid) {
+        if (Config::get().get_use_cache()) {
+            auto user = User::GetFromCache(uuid);
+            if (user.has_value()) {
+                // std::cout << "[DEBUG] Using cached user " << user->get_uuid() << std::endl;
+                return user;
+            }
+                // std::cout << "[DEBUG] Cache miss for " << uuid << std::endl;
+        }
+
         try {
             Poco::Data::Session session = database::Database::get().create_session();
             User a;
@@ -156,8 +167,13 @@ namespace database
 
             select.execute();
             Poco::Data::RecordSet rs(select);
-            if (rs.moveFirst())
+            if (rs.moveFirst()) {
+                if (Config::get().get_use_cache()) {
+                    a.SaveToCache();
+                    // std::cout << "[DEBUG] Cache user " << a._uuid << std::endl;
+                }
                 return a;
+            }
         }
         catch (Poco::Data::MySQL::ConnectionException& e) {
             std::cout << "connection:" << e.what() << std::endl;
@@ -305,6 +321,27 @@ namespace database
         catch (Poco::Data::MySQL::MySQLException& e) {
             std::cout << "MySQLException: " << e.displayText() << std::endl;
             throw;
+        }
+    }
+
+    void User::SaveToCache() const {
+        std::stringstream ss;
+        Poco::JSON::Stringifier::stringify(toJSON(), ss);
+        std::string message = ss.str();
+        database::Cache::Instance().Put(_uuid, message);
+    }
+
+    std::optional<User> User::GetFromCache(const std::string& id) {
+        try {
+            std::string result;
+            if (database::Cache::Instance().Get(id, result))
+                return fromJSON(result);
+            else
+                return std::optional<User>();
+        }
+        catch (const std::exception& e) {
+            std::cout << "cache error: " << e.what() << std::endl;
+            return std::optional<User>();
         }
     }
 

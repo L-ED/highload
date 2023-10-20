@@ -85,7 +85,7 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
         if (form.has("id") && (method == Poco::Net::HTTPRequest::HTTP_GET)) {
             const std::string& uuid = form.get("id");
 
-            std::optional<database::User> result = database::User::read_by_id(uuid);
+            std::optional<database::User> result = database::User::SelectById(uuid);
             if (result) {
                 response.setStatus(Poco::Net::HTTPResponse::HTTP_OK);
                 response.setChunkedTransferEncoding(true);
@@ -201,6 +201,12 @@ void UserHandler::handleRequest(HTTPServerRequest &request, HTTPServerResponse &
                 {
                     check_result = false;
                     message += reason;
+                    message += "<br>";
+                }
+
+                if (user.get_password().empty()) {
+                    check_result = false;
+                    message += "Password require";
                     message += "<br>";
                 }
 
