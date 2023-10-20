@@ -8,10 +8,18 @@ RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install \
     zlib1g-dev librdkafka-dev pkg-config cmake gcc git g++ \
     mysql-client libmysqlclient-dev libboost-all-dev \
     libssl-dev && apt-get clean
+
 RUN git clone -b poco-1.12.4-release https://github.com/pocoproject/poco.git && \
     cd poco && \
     mkdir cmake-build && \
     cd cmake-build && \
+    cmake .. && \
+    make -j$(nproc) && \
+    sudo make install
+
+RUN git clone https://github.com/tdv/redis-cpp.git && \
+    mkdir redis-cpp/cmake-build && \
+    cd redis-cpp/cmake-build && \
     cmake .. && \
     make -j$(nproc) && \
     sudo make install
