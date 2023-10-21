@@ -17,8 +17,9 @@ Config::Config() {
     _password = GetEnv("DB_PASSWORD");
     _database = GetEnv("DB_DATABASE");
 
-    use_cache_ = GetEnv("USE_CACHE").length();
-    std::cout << "[INFO] USE_CACHE: " << (use_cache_ ? "true" : "false") << std::endl;
+    // use_cache_ = GetEnv("USE_CACHE").length();
+    use_cache_ = GetEnv("USE_CACHE")=="true";
+    std::cout << "[INFO] USE_CACHE: " << (use_cache_ ? "True" : "False") << std::endl;
 
     cache_host_ = GetEnv("CACHE_HOST");
     cache_port_ = GetEnv("CACHE_PORT");

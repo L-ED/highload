@@ -30,8 +30,8 @@ Database
 ----
 
 ```bash
-# Build image
-docker build -t mariadb:hl --no-cache -f docker/mariadb/Dockerfile docker/mariadb/
+# Build image in proj root folder
+docker build -t mariadb:hl --no-cache -f docker/mmysql/Dockerfile docker/mysql/
 
 # Run container
 docker run --name database --rm -p 3306:3306 \

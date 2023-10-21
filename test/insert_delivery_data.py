@@ -8,7 +8,7 @@ import test_user
 
 
 def insert_test_data(session):
-    with open('test/data.json') as file:
+    with open('/home/led/MAI/highload/test/data.json') as file:
         data = json.load(file)
 
     user_mapper = test_delivery.UserMapper()

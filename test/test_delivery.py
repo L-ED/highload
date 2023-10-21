@@ -55,7 +55,7 @@ def get_deliveries(session, sender_id=None, reciever_id=None):
 class UserMapper:
     '''Users mapped by unique login field'''
     def __init__(self) -> None:
-        with open('test/data.json') as file:
+        with open('/home/led/MAI/highload/test/data.json') as file:
             data = json.load(file)
 
         users = { user['login']: user for user in test_user.user_all() }
